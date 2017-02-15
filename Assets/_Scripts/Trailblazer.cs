@@ -174,19 +174,25 @@ public class Trailblazer : MonoBehaviour {
 
 
     if (Input.GetButtonDown("DPadUp_P2")) {
-      if (currentBlockIndex == 0) {
-        int prevCurrentBlockIndex = currentBlockIndex;
 
-        currentBlockIndex = availableBlocks.Length - 1;
-        while (!availableBlocks[currentBlockIndex]) {
-          currentBlockIndex--;
-        }
+      if (!Gameplay.powered) {
+        if (currentBlockIndex == 0) {
+          int prevCurrentBlockIndex = currentBlockIndex;
 
-        if (prevCurrentBlockIndex != currentBlockIndex)
+          currentBlockIndex = availableBlocks.Length - 1;
+          while (!availableBlocks[currentBlockIndex]) {
+            currentBlockIndex--;
+          }
+
+          if (prevCurrentBlockIndex != currentBlockIndex)
+            ClearTrail();
+        } else if (availableBlocks[currentBlockIndex - 1]) {
           ClearTrail();
-      } else if (availableBlocks[currentBlockIndex - 1]) {
-        ClearTrail();
-        currentBlockIndex -= 1;
+          currentBlockIndex -= 1;
+        }
+      } else {
+        if (currentBlockIndex == 0) currentBlockIndex = availableBlocks.Length - 1;
+        else currentBlockIndex--;
       }
 
       currentBlockType = cubeTypeStrings[currentBlockIndex];
@@ -195,12 +201,17 @@ public class Trailblazer : MonoBehaviour {
 
     if (Input.GetButtonDown("DPadDown_P2")) {
 
-      if (currentBlockIndex == availableBlocks.Length - 1 || !availableBlocks[currentBlockIndex + 1]) {
-        ClearTrail();
-        currentBlockIndex = 0;
-      } else if (availableBlocks[currentBlockIndex + 1]) {
-        ClearTrail();
-        currentBlockIndex += 1;
+      if (!Gameplay.powered) {
+        if (currentBlockIndex == availableBlocks.Length - 1 || !availableBlocks[currentBlockIndex + 1]) {
+          ClearTrail();
+          currentBlockIndex = 0;
+        } else if (availableBlocks[currentBlockIndex + 1]) {
+          ClearTrail();
+          currentBlockIndex += 1;
+        }
+      } else {
+        if (currentBlockIndex == availableBlocks.Length - 1) currentBlockIndex = 0;
+        else currentBlockIndex++;
       }
 
       currentBlockType = cubeTypeStrings[currentBlockIndex];
@@ -234,17 +245,27 @@ public class Trailblazer : MonoBehaviour {
       CreateTrailCube();
     }
 
-    blockType.text = currentBlockType;
-    capacity.text = cubeTypes[currentBlockType].capacity.ToString();
-    trailLength.text = cubeTypes[currentBlockType].maxCubes.ToString();
+    if (!Gameplay.powered) {
+      blockType.text = currentBlockType;
+      capacity.text = cubeTypes[currentBlockType].capacity.ToString();
+      trailLength.text = cubeTypes[currentBlockType].maxCubes.ToString();
+    } else {
+      blockType.text = currentBlockType;
+      capacity.text = "INF";
+      trailLength.text = "INF";
+    }
 	}
 
   void Move () {
 
-    if (obstacle) {
+    if (obstacle && !Gameplay.invincible) {
       Destroy(gameObject);
       Gameplay.S.Restart();
       return;
+    }
+
+    if (obstacle && Gameplay.invincible) {
+      direction = -direction;
     }
 
     transform.position += direction;
@@ -258,8 +279,10 @@ public class Trailblazer : MonoBehaviour {
     nextTrailCube.GetComponent<TrailCube>().type = currentBlockType;
     cubeTypes[currentBlockType].trail.Add(nextTrailCube);
 
-    while (cubeTypes[currentBlockType].trail.ToArray().Length > cubeTypes[currentBlockType].maxCubes) {
-      CutEnd();
+    if (!Gameplay.powered) {
+      while (cubeTypes[currentBlockType].trail.ToArray().Length > cubeTypes[currentBlockType].maxCubes) {
+        CutEnd();
+      }
     }
   }
 
@@ -276,7 +299,9 @@ public class Trailblazer : MonoBehaviour {
       solidCube.transform.parent = parent.transform;
       Destroy(trailCube);
       CubeType c = cubeTypes[currentBlockType];
-      c.capacity--;
+      if (!Gameplay.powered) {
+        c.capacity--;
+      }
       cubeTypes[currentBlockType] = c;
     }
 
@@ -313,13 +338,15 @@ public class Trailblazer : MonoBehaviour {
 
   void DestroyStructure () {
     if (cubeTypes[currentBlockType].structures.Peek() != null) {
-      CubeType c = cubeTypes[currentBlockType];
-      c.capacity += cubeTypes[currentBlockType].structures.Peek().GetComponent<StructureParent>().size;
-      cubeTypes[currentBlockType] = c;
+      if (!Gameplay.powered) {
+        CubeType c = cubeTypes[currentBlockType];
+        c.capacity += cubeTypes[currentBlockType].structures.Peek().GetComponent<StructureParent>().size;
+        cubeTypes[currentBlockType] = c;
+      }
       Destroy(cubeTypes[currentBlockType].structures.Peek());
       cubeTypes[currentBlockType].structures.Pop();
-      if (cubeTypes[currentBlockType].maxCubes == 0) {
-        c = cubeTypes[currentBlockType];
+      if (cubeTypes[currentBlockType].maxCubes == 0 && !Gameplay.powered) {
+        CubeType c = cubeTypes[currentBlockType];
         c.maxCubes = 4 < cubeTypes[currentBlockType].capacity ? 4 : cubeTypes[currentBlockType].capacity;
         cubeTypes[currentBlockType] = c;
       }
@@ -330,6 +357,10 @@ public class Trailblazer : MonoBehaviour {
     if (other.gameObject.layer == LayerMask.NameToLayer("TurretBullet")) {
       timeHit = Time.time;
       StartCoroutine(Flasher());
+    }
+
+    if (other.gameObject.layer == LayerMask.NameToLayer("BottomlessPit")) {
+      Gameplay.S.Restart();
     }
   }
 
@@ -351,6 +382,7 @@ public class Trailblazer : MonoBehaviour {
   }
 
   public void EnablePower (string power, int capacity) {
+    if (Gameplay.powered) return;
     availableBlocks[powersToIndex[power]] = true;
     CubeType c = cubeTypes[power];
     c.capacity = capacity;
@@ -359,6 +391,7 @@ public class Trailblazer : MonoBehaviour {
   }
 
   public void IncreaseCapacity (string power, int capacity) {
+    if (Gameplay.powered) return;
     CubeType c = cubeTypes[power];
     c.capacity += capacity;
     cubeTypes[power] = c;

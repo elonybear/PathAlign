@@ -11,8 +11,23 @@ public class Gameplay : MonoBehaviour {
 
   static string lastLevel = "MainMenu";
 
+  public static bool invincible = false;
+  public static bool powered = false;
+
   void Awake () {
     S = this;
+  }
+
+  void Update () {
+    if (Input.GetKeyDown(KeyCode.F1)) {
+      if (GameObject.Find("BottomlessPit") != null)
+        GameObject.Find("BottomlessPit").GetComponent<BoxCollider2D>().isTrigger = false;
+      invincible = true;
+    }
+
+    if (Input.GetKeyDown(KeyCode.F2)) {
+      powered = true;
+    }
   }
 
 	public void Restart () {

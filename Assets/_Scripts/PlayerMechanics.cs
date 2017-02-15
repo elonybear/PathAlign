@@ -13,7 +13,7 @@ public class PlayerMechanics : MonoBehaviour {
   public Text healthText;
 
   void OnTriggerEnter2D(Collider2D other) {
-    if (other.gameObject.layer == LayerMask.NameToLayer("TurretBullet")) {
+    if (other.gameObject.layer == LayerMask.NameToLayer("TurretBullet") && !Gameplay.powered) {
       StartCoroutine(Flasher());
       health -= 10;
       healthText.text = health.ToString();
@@ -22,23 +22,27 @@ public class PlayerMechanics : MonoBehaviour {
       }
     }
 
-    if (other.gameObject.layer == LayerMask.NameToLayer("JumpPowerup")) {
+    if (other.gameObject.layer == LayerMask.NameToLayer("JumpPowerup") && !Gameplay.powered) {
       Trailblazer.S.EnablePower("Jump", 2);
       Trailblazer.S.hasJump = true;
       Destroy(other.gameObject);
     }
 
-    if (other.gameObject.layer == LayerMask.NameToLayer("AmmoBox")) {
+    if (other.gameObject.layer == LayerMask.NameToLayer("AmmoBox")  && !Gameplay.powered) {
       Trailblazer.S.IncreaseCapacity("Standard", 5);
       Destroy(other.gameObject);
     }
 
     print("Collided with " + other.gameObject.name);
 
-    if (other.gameObject.layer == LayerMask.NameToLayer("SpeedPowerup")) {
+    if (other.gameObject.layer == LayerMask.NameToLayer("SpeedPowerup") && !Gameplay.powered) {
       Trailblazer.S.EnablePower("Speed", 10);
       Trailblazer.S.hasSpeed = true;
       Destroy(other.gameObject);
+    }
+
+    if (other.gameObject.layer == LayerMask.NameToLayer("BottomlessPit") && !Gameplay.powered) {
+      Gameplay.S.Restart();
     }
   }
 
