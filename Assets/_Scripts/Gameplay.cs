@@ -7,7 +7,9 @@ public class Gameplay : MonoBehaviour {
 
   static public Gameplay S;
 
-  static int lives = 3;
+  public static int lives = 3;
+
+  static string lastLevel = "MainMenu";
 
   void Awake () {
     S = this;
@@ -16,22 +18,34 @@ public class Gameplay : MonoBehaviour {
 	public void Restart () {
     lives--;
     if (lives > 0) {
+      lastLevel = SceneManager.GetActiveScene().name;
       SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); 
     } else {
-
+      SceneManager.LoadScene("GameOver");
     }
   }
 
   public void LoadNextScene () {
-    print("Loading next scene");
+    //lastLevel = SceneManager.GetSceneAt(SceneManager.GetActiveScene().buildIndex + 1).name;
     SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
   }
 
   public void TutorialClick () {
+    lastLevel = "Tutorial";
     SceneManager.LoadScene("Tutorial");
   }
 
   public void CampaignClick () {
+    lastLevel = "Level1";
     SceneManager.LoadScene("Level1");
+  }
+
+  public void MainMenuClick () {
+    lastLevel = "MainMenu";
+    SceneManager.LoadScene("MainMenu");
+  }
+
+  public void TryAgainClick () {
+    SceneManager.LoadScene(lastLevel);
   }
 }
