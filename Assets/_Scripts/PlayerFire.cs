@@ -18,7 +18,7 @@ public class PlayerFire : MonoBehaviour {
     float axisVal = Input.GetAxis("RightTrigger_P1");
 
     //Pressed trigger
-		if (axisVal != 0 && axisVal != -1 && (timeFired == -1 || Time.time - timeFired > 1)) {
+		if (axisVal != 0 && axisVal != -1 && (timeFired == -1 || Time.time - timeFired > .75f)) {
       //Fire weapon
       Fire();
     }

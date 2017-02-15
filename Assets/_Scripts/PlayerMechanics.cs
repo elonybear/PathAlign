@@ -21,6 +21,25 @@ public class PlayerMechanics : MonoBehaviour {
         Gameplay.S.Restart();
       }
     }
+
+    if (other.gameObject.layer == LayerMask.NameToLayer("JumpPowerup")) {
+      Trailblazer.S.EnablePower("Jump", 2);
+      Trailblazer.S.hasJump = true;
+      Destroy(other.gameObject);
+    }
+
+    if (other.gameObject.layer == LayerMask.NameToLayer("AmmoBox")) {
+      Trailblazer.S.IncreaseCapacity("Standard", 5);
+      Destroy(other.gameObject);
+    }
+
+    print("Collided with " + other.gameObject.name);
+
+    if (other.gameObject.layer == LayerMask.NameToLayer("SpeedPowerup")) {
+      Trailblazer.S.EnablePower("Speed", 10);
+      Trailblazer.S.hasSpeed = true;
+      Destroy(other.gameObject);
+    }
   }
 
   IEnumerator Flasher () {

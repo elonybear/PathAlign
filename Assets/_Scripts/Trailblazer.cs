@@ -57,7 +57,7 @@ public class Trailblazer : MonoBehaviour {
   public int standardCapacity;
   public int jumpCapacity;
   public int ultraJumpCapacity;
-  public int speedCapacity;
+  public int speedCapacity = 10;
   public int ultraSpeedCapacity;
   public Color collide;
 
@@ -66,8 +66,6 @@ public class Trailblazer : MonoBehaviour {
   Rigidbody2D rigid;
   float timeStart = 0;
   Vector3 direction;
-  //public List<GameObject> trail;
-  //public Stack<GameObject> structures;
   bool change = true;
   public bool obstacle;
   public int groundPhysicsLayerMask;
@@ -83,7 +81,8 @@ public class Trailblazer : MonoBehaviour {
   public string currentBlockType = "Standard";
 
   Dictionary<string, CubeType> cubeTypes;
-  bool [] availableBlocks = new bool[5]{true, true, true, false, false};
+  public Dictionary<string, int> powersToIndex;
+  public bool [] availableBlocks = new bool[5]{true, true, true, false, false};
 
   public List<string> cubeTypeStrings;
 
@@ -102,13 +101,19 @@ public class Trailblazer : MonoBehaviour {
     incrementRight = false;
 
     cubeTypes = new Dictionary<string, CubeType>();
-    cubeTypeStrings = new List<string>(new string[5]{"Standard", "Jump", "Ultra Jump", "Speed", "Ultra Speed"});
+    cubeTypeStrings = new List<string>(new string[5]{"Standard", "Jump", "Speed", "Ultra Jump", "Ultra Speed"});
 
     cubeTypes["Standard"] = new CubeType(standardCapacity, trailStandardCubePrefab, solidStandardCubePrefab);
     cubeTypes["Jump"] = new CubeType(jumpCapacity, trailJumpCubePrefab, solidJumpCubePrefab);
     cubeTypes["Ultra Jump"] = new CubeType(ultraJumpCapacity, trailUltraJumpCubePrefab, solidUltraJumpCubePrefab);
     cubeTypes["Speed"] = new CubeType(speedCapacity, trailSpeedCubePrefab, solidSpeedCubePrefab);
     cubeTypes["Ultra Speed"] = new CubeType(speedCapacity, trailUltraSpeedCubePrefab, solidUltraSpeedCubePrefab);
+
+    powersToIndex = new Dictionary<string, int>();
+    int index = 0;
+    foreach (string type in cubeTypeStrings) {
+      powersToIndex[type] = index++;
+    }
   }
 
 	// Update is called once per frame
@@ -267,6 +272,7 @@ public class Trailblazer : MonoBehaviour {
       if (standardCapacity == 0) return;
       GameObject solidCube = Instantiate<GameObject>(cubeTypes[currentBlockType].solidPrefab);
       solidCube.transform.position = trailCube.transform.position;
+      solidCube.transform.localEulerAngles = new Vector3(0, 0, Mathf.Acos(direction.x) * 180 / Mathf.PI);
       solidCube.transform.parent = parent.transform;
       Destroy(trailCube);
       CubeType c = cubeTypes[currentBlockType];
@@ -342,5 +348,19 @@ public class Trailblazer : MonoBehaviour {
 
   public void RemoveTrailCube (GameObject trailCube, string type) {
     cubeTypes[type].trail.Remove(trailCube);
+  }
+
+  public void EnablePower (string power, int capacity) {
+    availableBlocks[powersToIndex[power]] = true;
+    CubeType c = cubeTypes[power];
+    c.capacity = capacity;
+    c.maxCubes = capacity;
+    cubeTypes[power] = c;
+  }
+
+  public void IncreaseCapacity (string power, int capacity) {
+    CubeType c = cubeTypes[power];
+    c.capacity += capacity;
+    cubeTypes[power] = c;
   }
 }
