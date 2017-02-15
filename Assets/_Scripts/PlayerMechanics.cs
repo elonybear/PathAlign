@@ -12,8 +12,16 @@ public class PlayerMechanics : MonoBehaviour {
   public Color collide;
   public Text healthText;
 
+  void Update () {
+    if (Gameplay.invincible) {
+      healthText.text = "INF";
+    } else {
+      healthText.text = health.ToString();
+    }
+  }
+
   void OnTriggerEnter2D(Collider2D other) {
-    if (other.gameObject.layer == LayerMask.NameToLayer("TurretBullet") && !Gameplay.powered) {
+    if (other.gameObject.layer == LayerMask.NameToLayer("TurretBullet") && !Gameplay.invincible) {
       StartCoroutine(Flasher());
       health -= 10;
       healthText.text = health.ToString();
