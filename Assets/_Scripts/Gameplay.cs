@@ -22,11 +22,11 @@ public class Gameplay : MonoBehaviour {
     if (Input.GetKeyDown(KeyCode.F1)) {
       if (GameObject.Find("BottomlessPit") != null)
         GameObject.Find("BottomlessPit").GetComponent<BoxCollider2D>().isTrigger = false;
-      invincible = true;
+      invincible = !invincible;
     }
 
     if (Input.GetKeyDown(KeyCode.F2)) {
-      powered = true;
+      powered = !powered;
     }
   }
 
