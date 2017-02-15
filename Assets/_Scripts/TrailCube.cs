@@ -8,6 +8,7 @@ public class TrailCube : MonoBehaviour {
   public bool ___________________;
   public Renderer rend;
   public bool solid;
+  public string type;
 
 
   void Start () {
@@ -28,7 +29,7 @@ public class TrailCube : MonoBehaviour {
 
     if (rend.material.color.a <= 0) {
       Destroy(gameObject);
-      Trailblazer.S.RemoveTrailCube(gameObject);
+      Trailblazer.S.RemoveTrailCube(gameObject, type);
     }
   }
 }
